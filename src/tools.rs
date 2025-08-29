@@ -2,7 +2,7 @@ mod yaml;
 pub use yaml::YamlTool;
 
 #[derive(Debug, thiserror::Error)]
-#[error("Math error")]
+#[error("{message}")]
 pub struct ToolError {
     message: String,
 }

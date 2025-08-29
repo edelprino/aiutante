@@ -9,13 +9,13 @@ use crate::tools;
 
 type OpenaiAgent = rig::agent::Agent<ResponsesCompletionModel>;
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "lowercase")]
 enum Provider {
     OpenAI,
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct Metadata {
     tools: Vec<String>,
     model: Option<String>,
@@ -25,6 +25,26 @@ pub struct Metadata {
 pub struct AgentConfiguration {
     prompt: String,
     metadata: Metadata,
+}
+
+impl Default for AgentConfiguration {
+    fn default() -> Self {
+        Self {
+            prompt: String::new(),
+            metadata: Metadata {
+                tools: vec![],
+                model: Some(openai::GPT_4O.to_string()),
+                provider: Some(Provider::OpenAI),
+            },
+        }
+    }
+}
+
+impl std::fmt::Display for AgentConfiguration {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let yml = serde_yaml::to_string(&self.metadata).map_err(|_| std::fmt::Error)?;
+        write!(f, "---\n{yml}---\n{}", self.prompt)
+    }
 }
 
 impl AgentConfiguration {
