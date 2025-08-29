@@ -7,8 +7,12 @@ mod tools;
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 enum Cli {
+    /// Run a specific agent with an optional task
     Run { agent: String, task: Option<String> },
+    /// Start an interactive chat with the agent
     Chat { agent: String },
+    /// List of all available agents
+    List {},
 }
 
 #[tokio::main]
@@ -42,6 +46,29 @@ async fn main() {
             let agent =
                 Agent::from_configuration(&c).expect("Failed to create agent from configuration");
             agent.chat().await.expect("Failed to run chat");
+        }
+        Cli::List {} => {
+            let paths = std::fs::read_dir(&minions_folder)
+                .expect("Failed to read minions folder")
+                .filter_map(|entry| {
+                    let entry = entry.ok()?;
+                    let path = entry.path();
+                    if path.extension()? == "md" {
+                        Some(path.file_stem()?.to_string_lossy().to_string())
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<_>>();
+
+            if paths.is_empty() {
+                println!("No agents found in {minions_folder}");
+            } else {
+                println!("Available agents:");
+                for path in paths {
+                    println!("- {path}");
+                }
+            }
         }
     }
 }
