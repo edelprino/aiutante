@@ -1,0 +1,9 @@
+services:
+  sandbox:
+    build:
+      context: ./sandbox
+    volumes:
+      - ./sandbox:/sandbox
+      - ~/Downloads/BaseData-data-2025-08-26 13_32_15.csv:/tmp/data.csv
+    stdin_open: true
+    tty: true
