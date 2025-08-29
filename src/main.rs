@@ -17,11 +17,13 @@ async fn main() {
     dotenvy::dotenv()
         .map_err(|e| log::warn!("Failed to read .env file: {e}"))
         .ok();
+    let minions_folder =
+        std::env::var("MINIONS_FOLDER").expect("MINIONS_FOLDER must be set in .env");
 
     let cli = Cli::parse();
     match cli {
         Cli::Run { agent, task } => {
-            let path = format!("/Users/edelprino/Knowledge/Risorse/Agents/{agent}.md");
+            let path = format!("{minions_folder}/{agent}.md");
             let c =
                 AgentConfiguration::from_file(&path).expect("Failed to read agent configuration");
             let agent =
@@ -34,7 +36,7 @@ async fn main() {
             }
         }
         Cli::Chat { agent } => {
-            let path = format!("/Users/edelprino/Knowledge/Risorse/Agents/{agent}.md");
+            let path = format!("{minions_folder}/{agent}.md");
             let c =
                 AgentConfiguration::from_file(&path).expect("Failed to read agent configuration");
             let agent =

@@ -88,7 +88,9 @@ impl Agent {
 
         let mut builder = builder.preamble(&configuration.prompt);
         for library in &configuration.metadata.tools {
-            let path = format!(".army/tools/{library}.yml");
+            let minions_folder =
+                std::env::var("MINIONS_FOLDER").expect("MINIONS_FOLDER must be set in .env");
+            let path = format!("{minions_folder}/tools/{library}.yml");
             let lib_tools = tools::YamlTool::from_file(path)
                 .map_err(|e| AgentError::new(&format!("Failed to load tool library: {e}")))?;
             for tool in lib_tools {

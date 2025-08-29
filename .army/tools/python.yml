@@ -1,6 +1,0 @@
-python_executor:
-  description: Execute Python code
-  tool: docker compose run --rm sandbox python3 -c $'{{code}}'
-  arguments:
-    code:
-        description: "The code to execute, remember to print the result for get it back"
