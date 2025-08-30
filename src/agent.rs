@@ -1,11 +1,11 @@
+use crate::tools;
 use rig::{
     client::{CompletionClient, ProviderClient},
     completion::Prompt,
     providers::openai::{self, responses_api::ResponsesCompletionModel},
     tool::Tool,
 };
-
-use crate::tools;
+use teloxide::{prelude::*, utils::command::BotCommands};
 
 type OpenaiAgent = rig::agent::Agent<ResponsesCompletionModel>;
 
@@ -173,4 +173,61 @@ impl Agent {
 
         Ok(())
     }
+
+    pub async fn telegram(self) -> Result<(), AgentError> {
+        use rig::completion::Message as RigMessage;
+        use std::sync::Arc;
+
+        let agent = Arc::new(self.agent);
+        let messages = Arc::new(tokio::sync::Mutex::new(vec![]));
+
+        let bot = Bot::from_env();
+
+        teloxide::repl(bot, move |bot: Bot, msg: Message| {
+            let agent = Arc::clone(&agent);
+            let messages = Arc::clone(&messages);
+            async move {
+                if msg.chat.id != ChatId(24437804) {
+                    return Ok(());
+                }
+                log::debug!("Received message: {:?}", msg.text().unwrap_or_default());
+
+                if msg.text() == Some("/clear") {
+                    let mut messages_guard = messages.lock().await;
+                    messages_guard.clear();
+                    drop(messages_guard);
+                    bot.send_message(msg.chat.id, "Cleared chat history")
+                        .await?;
+                    return Ok(());
+                }
+                let response = agent
+                    .prompt(msg.text().unwrap_or_default())
+                    .with_history(&mut messages.lock().await.clone())
+                    .multi_turn(10)
+                    .await
+                    .unwrap_or_else(|e| format!("Error: {e}"));
+                log::debug!("Agent response: {response}");
+
+                let mut messages_guard = messages.lock().await;
+                messages_guard.push(RigMessage::user(msg.text().unwrap_or_default().to_string()));
+                messages_guard.push(RigMessage::assistant(response.clone()));
+                drop(messages_guard);
+
+                let _ = bot.send_message(msg.chat.id, response).await;
+                Ok(())
+            }
+        })
+        .await;
+        Ok(())
+    }
+}
+
+#[derive(BotCommands, Clone)]
+#[command(
+    rename_rule = "lowercase",
+    description = "These commands are supported:"
+)]
+enum Command {
+    #[command(description = "Clear the chat history")]
+    Clear,
 }

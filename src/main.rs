@@ -19,6 +19,9 @@ enum Cli {
     Create {
         agent: String,
     },
+    Telegram {
+        agent: String,
+    },
 }
 
 #[tokio::main]
@@ -62,6 +65,14 @@ async fn main() {
             let config = AgentConfiguration::default();
             std::fs::write(&path, config.to_string()).expect("Failed to write agent template");
             println!("Created new agent {agent} at {path}");
+        }
+        Cli::Telegram { agent } => {
+            let path = format!("{minions_folder}/{agent}.md");
+            let c =
+                AgentConfiguration::from_file(&path).expect("Failed to read agent configuration");
+            let agent =
+                Agent::from_configuration(&c).expect("Failed to create agent from configuration");
+            agent.telegram().await.expect("Failed to run telegram bot");
         }
     }
 }
