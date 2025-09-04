@@ -4,14 +4,15 @@ on:
     branches:
       - master
 jobs:
-  docker:
+  test:
     runs-on: ubuntu-latest
     env:
       RUST_LOG: info
     steps:
       - uses: actions/checkout@v4
-      - name: Docker Build
+      - name: Run Tests
         run: make build
+
 
   binaries:
     strategy:
@@ -20,6 +21,9 @@ jobs:
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
             name: aiutante-linux-x86_64
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            name: aiutante-linux-aarch64
           - target: x86_64-pc-windows-msvc
             os: windows-latest
             name: aiutante-windows-x86_64.exe
@@ -58,7 +62,7 @@ jobs:
           path: ${{ matrix.name }}
 
   release:
-    needs: [docker, binaries]
+    needs: [test, binaries]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     permissions:
@@ -88,6 +92,7 @@ jobs:
 
             ## Binaries
             - Linux x86_64: `aiutante-linux-x86_64`
+            - Linux ARM64: `aiutante-linux-aarch64`
             - Windows x86_64: `aiutante-windows-x86_64.exe`
             - macOS x86_64: `aiutante-macos-x86_64`
             - macOS ARM64: `aiutante-macos-aarch64`
@@ -95,3 +100,28 @@ jobs:
             ./artifacts/*/aiutante-*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Log in to GitHub Container Registry
+      #   uses: docker/login-action@v3
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Extract metadata
+      #   id: meta
+      #   uses: docker/metadata-action@v5
+      #   with:
+      #     images: ghcr.io/${{ github.repository }}
+      #     tags: |
+      #       type=ref,event=branch
+      #       type=sha
+      #       type=raw,value=latest,enable={{is_default_branch}}
+
+      # - name: Docker Build and Push
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: .
+      #     push: true
+      #     tags: ${{ steps.meta.outputs.tags }}
+      #     labels: ${{ steps.meta.outputs.labels }}
