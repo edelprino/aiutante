@@ -93,7 +93,7 @@ impl rig::tool::Tool for YamlTool {
             command = command.replace(&placeholder, value);
         }
         log::debug!("[{}] Request: {:?}", self.name(), command);
-        let output = std::process::Command::new("zsh")
+        let output = std::process::Command::new("bash")
             .arg("-lc")
             .arg(command)
             .envs(std::env::vars())
