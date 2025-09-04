@@ -1,12 +1,17 @@
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 use axum::{
-    Router,
+    Router, extract,
     routing::{get, post},
 };
+use rig::providers::openai::Message;
+use serde::Deserialize;
+use tower_http::cors::CorsLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-async fn responses() -> &'static str {
-    log::info!("Received request at /v1/resposens");
+async fn chat_completions(
+    extract::Json(payload): extract::Json<ChatCompletionRequest>,
+) -> &'static str {
+    dbg!(&payload);
     "Hello, World!"
 }
 
@@ -23,11 +28,24 @@ pub async fn run() -> Result<()> {
 
     let host = std::env::var("API_HOST").unwrap_or("0.0.0.0:8080".to_string());
     log::info!("Starting API server at http://{host}");
+    let cors = CorsLayer::permissive();
+
     let app = Router::new()
         .route("/", get(root))
-        .route("/v1/resposens", post(responses))
+        .route("/chat/completions", post(chat_completions))
+        .layer(cors)
         .layer(tower_http::trace::TraceLayer::new_for_http());
+
     let listener = tokio::net::TcpListener::bind(host).await.unwrap();
     axum::serve(listener, app).await.unwrap();
     Ok(())
+}
+
+#[derive(Clone, Deserialize, Debug)]
+struct ChatCompletionRequest {
+    model: String,
+    messages: Vec<Message>,
+    max_tokens: Option<u32>,
+    temperature: Option<f32>,
+    stream: Option<bool>,
 }
