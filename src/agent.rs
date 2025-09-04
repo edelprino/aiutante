@@ -25,6 +25,7 @@ pub struct Metadata {
 pub struct AgentConfiguration {
     prompt: String,
     metadata: Metadata,
+    name: String,
 }
 
 impl Default for AgentConfiguration {
@@ -36,6 +37,7 @@ impl Default for AgentConfiguration {
                 model: Some(openai::GPT_4O.to_string()),
                 provider: Some(Provider::OpenAI),
             },
+            name: "".to_string(),
         }
     }
 }
@@ -49,8 +51,13 @@ impl std::fmt::Display for AgentConfiguration {
 
 impl AgentConfiguration {
     pub fn from_file<P: AsRef<std::path::Path>>(path: P) -> Result<Self, AgentError> {
-        let prompt = std::fs::read_to_string(path)
+        let prompt = std::fs::read_to_string(&path)
             .map_err(|e| AgentError::new(&format!("Failed to read file: {e}")))?;
+        let filename = path
+            .as_ref()
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .ok_or_else(|| AgentError::new("Failed to get file stem"))?;
         let mut prompt = prompt.splitn(3, "---\n");
         let yaml = prompt
             .nth(1)
@@ -63,6 +70,7 @@ impl AgentConfiguration {
         Ok(Self {
             prompt: prompt.to_string(),
             metadata: yaml,
+            name: filename.to_string(),
         })
     }
 }
@@ -111,7 +119,7 @@ impl Agent {
             let minions_folder =
                 std::env::var("MINIONS_FOLDER").expect("MINIONS_FOLDER must be set in .env");
             let path = format!("{minions_folder}/tools/{library}.yml");
-            let lib_tools = tools::YamlTool::from_file(path)
+            let lib_tools = tools::YamlTool::from_file(path, &configuration.name)
                 .map_err(|e| AgentError::new(&format!("Failed to load tool library: {e}")))?;
             for tool in lib_tools {
                 log::debug!("Registering tool from library {}: {}", library, tool.name());

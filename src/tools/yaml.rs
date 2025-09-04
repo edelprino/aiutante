@@ -9,17 +9,25 @@ use crate::tools::ToolError;
 pub struct YamlTool {
     name: String,
     config: ToolConfig,
+    agent: String,
 }
 
 /// Configuration for a single tool argument
 impl YamlTool {
     /// Create a new CustomTool from a TOML configuration file
-    pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Vec<Self>, Box<dyn std::error::Error>> {
+    pub fn from_file<P: AsRef<Path>>(
+        path: P,
+        agent: &str,
+    ) -> Result<Vec<Self>, Box<dyn std::error::Error>> {
         let config = ToolsConfig::from_file(path)?;
         Ok(config
             .0
             .into_iter()
-            .map(|(name, cfg)| Self { name, config: cfg })
+            .map(|(name, cfg)| Self {
+                name,
+                config: cfg,
+                agent: agent.to_string(),
+            })
             .collect())
     }
 }
@@ -89,6 +97,7 @@ impl rig::tool::Tool for YamlTool {
             .arg("-lc")
             .arg(command)
             .envs(std::env::vars())
+            .env("AGENT", &self.agent)
             .output();
 
         let output = match output {
