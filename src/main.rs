@@ -2,6 +2,7 @@ use crate::agent::{Agent, AgentConfiguration};
 use clap::Parser;
 
 mod agent;
+mod api;
 mod tools;
 
 #[derive(Parser, Debug)]
@@ -22,6 +23,7 @@ enum Cli {
     Telegram {
         agent: String,
     },
+    Api,
 }
 
 #[tokio::main]
@@ -73,6 +75,9 @@ async fn main() {
             let agent =
                 Agent::from_configuration(&c).expect("Failed to create agent from configuration");
             agent.telegram().await.expect("Failed to run telegram bot");
+        }
+        Cli::Api => {
+            api::run().await.expect("Failed to start API server");
         }
     }
 }
