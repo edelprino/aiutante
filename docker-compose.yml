@@ -1,9 +1,8 @@
 services:
-  sandbox:
+  aiutante:
     build:
-      context: ./sandbox
+      context: .
     volumes:
-      - ./sandbox:/sandbox
-      - ~/Downloads/BaseData-data-2025-08-26 13_32_15.csv:/tmp/data.csv
+      - ./agents:/agents
     stdin_open: true
     tty: true

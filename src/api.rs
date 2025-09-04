@@ -76,7 +76,7 @@ async fn chat_completions(
         .collect();
 
     let minions_folder =
-        std::env::var("MINIONS_FOLDER").expect("MINIONS_FOLDER must be set in .env");
+        std::env::var("AIUTANTE_FOLDER").expect("AIUTANTE_FOLDER must be set in .env");
     let path = format!("{minions_folder}/{agent}.md");
     let c = AgentConfiguration::from_file(&path).expect("Failed to read agent configuration");
     let agent = Agent::from_configuration(&c).expect("Failed to create agent from configuration");
@@ -115,7 +115,7 @@ pub async fn run() -> Result<()> {
         .try_init()
         .ok();
 
-    let host = std::env::var("API_HOST").unwrap_or("0.0.0.0:8080".to_string());
+    let host = std::env::var("AIUTANTE_API_HOST").unwrap_or("0.0.0.0:8080".to_string());
     log::info!("Starting API server at http://{host}");
     let cors = CorsLayer::permissive();
 

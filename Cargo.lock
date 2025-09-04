@@ -41,6 +41,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "aiutante"
+version = "0.0.1-alpha"
+dependencies = [
+ "async-trait",
+ "axum",
+ "axum-streams",
+ "clap",
+ "dotenvy",
+ "env_logger",
+ "futures",
+ "log",
+ "rig-core",
+ "schemars 1.0.4",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "teloxide",
+ "thiserror 2.0.16",
+ "tokio",
+ "toml",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "android-tzdata"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1600,33 +1627,6 @@ name = "minimal-lexical"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
-
-[[package]]
-name = "minions"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "axum",
- "axum-streams",
- "clap",
- "dotenvy",
- "env_logger",
- "futures",
- "log",
- "rig-core",
- "schemars 1.0.4",
- "serde",
- "serde_json",
- "serde_yaml",
- "teloxide",
- "thiserror 2.0.16",
- "tokio",
- "toml",
- "tower",
- "tower-http",
- "tracing",
- "tracing-subscriber",
-]
 
 [[package]]
 name = "miniz_oxide"

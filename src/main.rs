@@ -33,7 +33,7 @@ async fn main() {
         .map_err(|e| log::warn!("Failed to read .env file: {e}"))
         .ok();
     let minions_folder =
-        std::env::var("MINIONS_FOLDER").expect("MINIONS_FOLDER must be set in .env");
+        std::env::var("AIUTANTE_FOLDER").expect("AIUTANTE_FOLDER must be set in .env");
 
     let cli = Cli::parse();
     match cli {
