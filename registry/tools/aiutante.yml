@@ -1,0 +1,3 @@
+list_of_available_tools:
+  description: Return the list of available tools in the registry
+  tool: gh api repos/edelprino/aiutante/contents/registry/tools | jq -r '.[].name'
