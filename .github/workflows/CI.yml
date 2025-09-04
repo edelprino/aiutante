@@ -72,11 +72,11 @@ jobs:
       - name: Create release tag
         id: tag
         run: |
-          TAG="v$(date +'%Y%m%d%H%M%S')"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git tag $TAG
+          cargo install cargo-version-upgrade
+          cargo-version-upgrade minor
+          echo "tag=$(git tag --sort=-creatordate | head)" >> $GITHUB_OUTPUT
           git push origin $TAG
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
