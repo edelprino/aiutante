@@ -56,3 +56,42 @@ jobs:
         with:
           name: ${{ matrix.name }}
           path: ${{ matrix.name }}
+
+  release:
+    needs: [docker, binaries]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+      - name: Create release tag
+        id: tag
+        run: |
+          TAG="v$(date +'%Y.%m.%d-%H%M%S')"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag $TAG
+          git push origin $TAG
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Release ${{ steps.tag.outputs.tag }}
+          body: |
+            Automated release built from commit ${{ github.sha }}
+
+            ## Binaries
+            - Linux x86_64: `aiutante-linux-x86_64`
+            - Windows x86_64: `aiutante-windows-x86_64.exe`
+            - macOS x86_64: `aiutante-macos-x86_64`
+            - macOS ARM64: `aiutante-macos-aarch64`
+          files: |
+            ./artifacts/*/aiutante-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
