@@ -6,3 +6,10 @@ services:
       - ./agents:/agents
     stdin_open: true
     tty: true
+    environment:
+      AIUTANTE_API_HOST: 0.0.0.0:3000
+      AIUTANTE_FOLDER: "/agents"
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
