@@ -72,7 +72,7 @@ jobs:
       - name: Create release tag
         id: tag
         run: |
-          TAG="v$(date +'%Y.%m.%d-%H%M%S')"
+          TAG="v$(date +'%Y%m%d%H%M%S')"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
