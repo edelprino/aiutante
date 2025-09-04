@@ -139,6 +139,19 @@ impl Agent {
             .map_err(|e| AgentError::new(&format!("Failed to run agent: {e}")))
     }
 
+    pub async fn completions(
+        &self,
+        messages: Vec<rig::completion::Message>,
+    ) -> Result<String, AgentError> {
+        log::info!("Running agent with messages: {messages:?}");
+        self.agent
+            .prompt("")
+            .with_history(&mut messages.clone())
+            .multi_turn(10)
+            .await
+            .map_err(|e| AgentError::new(&format!("Failed to run agent: {e}")))
+    }
+
     pub async fn chat(self) -> Result<(), AgentError> {
         use rig::completion::Message;
         use std::io::{self, Write};

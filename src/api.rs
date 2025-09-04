@@ -11,6 +11,8 @@ use serde::Deserialize;
 use tower_http::cors::CorsLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+use crate::agent::{Agent, AgentConfiguration};
+
 #[derive(serde::Serialize)]
 struct ChatCompletionChunk {
     id: String,
@@ -67,12 +69,27 @@ impl ChatCompletionChunk {
 async fn chat_completions(
     extract::Json(payload): extract::Json<ChatCompletionRequest>,
 ) -> impl IntoResponse {
+    let agent = payload.model;
+    let messages: Vec<rig::message::Message> = payload
+        .messages
+        .iter()
+        .skip(1)
+        .map(|m| m.clone().try_into().unwrap())
+        .collect();
+
+    let minions_folder =
+        std::env::var("MINIONS_FOLDER").expect("MINIONS_FOLDER must be set in .env");
+    let path = format!("{minions_folder}/{agent}.md");
+    let c = AgentConfiguration::from_file(&path).expect("Failed to read agent configuration");
+    let agent = Agent::from_configuration(&c).expect("Failed to create agent from configuration");
+    let response = agent
+        .completions(messages)
+        .await
+        .expect("Failed to get completions");
+
     let chunks = vec![
         ChatCompletionChunk::start("assistant"),
-        ChatCompletionChunk::content("Hello"),
-        ChatCompletionChunk::content(", "),
-        ChatCompletionChunk::content("world"),
-        ChatCompletionChunk::content("!"),
+        ChatCompletionChunk::content(&response),
         ChatCompletionChunk::stop(),
     ];
     let stream = stream::iter(chunks)
