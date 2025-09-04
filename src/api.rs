@@ -1,18 +1,92 @@
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 use axum::{
     Router, extract,
+    response::IntoResponse,
     routing::{get, post},
 };
+use axum_streams::*;
+use futures::prelude::*;
 use rig::providers::openai::Message;
 use serde::Deserialize;
 use tower_http::cors::CorsLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+#[derive(serde::Serialize)]
+struct ChatCompletionChunk {
+    id: String,
+    object: String,
+    created: u64,
+    choices: Vec<Choice>,
+}
+
+#[derive(serde::Serialize)]
+struct Choice {
+    index: i32,
+    delta: Delta,
+    finish_reason: Option<String>,
+}
+
+#[derive(serde::Serialize)]
+struct Delta {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    role: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    content: Option<String>,
+}
+
+impl ChatCompletionChunk {
+    fn new(content: Option<String>, role: Option<String>, finish_reason: Option<String>) -> Self {
+        Self {
+            id: "chatcmpl-123".to_string(),
+            object: "chat.completion.chunk".to_string(),
+            created: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
+            choices: vec![Choice {
+                index: 0,
+                delta: Delta { role, content },
+                finish_reason,
+            }],
+        }
+    }
+
+    fn stop() -> Self {
+        Self::new(None, None, Some("stop".to_string()))
+    }
+
+    fn content(content: &str) -> Self {
+        Self::new(Some(content.to_string()), None, None)
+    }
+
+    fn start(role: &str) -> Self {
+        Self::new(None, Some(role.to_string()), None)
+    }
+}
+
 async fn chat_completions(
     extract::Json(payload): extract::Json<ChatCompletionRequest>,
-) -> &'static str {
-    dbg!(&payload);
-    "Hello, World!"
+) -> impl IntoResponse {
+    let chunks = vec![
+        ChatCompletionChunk::start("assistant"),
+        ChatCompletionChunk::content("Hello"),
+        ChatCompletionChunk::content(", "),
+        ChatCompletionChunk::content("world"),
+        ChatCompletionChunk::content("!"),
+        ChatCompletionChunk::stop(),
+    ];
+    let stream = stream::iter(chunks)
+        .map(|chunk| {
+            let json = serde_json::to_string(&chunk).unwrap();
+            format!("data: {}\n\n", json)
+        })
+        .chain(stream::once(async { "data: [DONE]\n\n".to_string() }));
+    axum::response::Response::builder()
+        .header("content-type", "text/event-stream")
+        .header("cache-control", "no-cache")
+        .header("connection", "keep-alive")
+        .body(StreamBodyAs::text(stream))
+        .unwrap()
 }
 
 async fn root() -> &'static str {
