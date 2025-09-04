@@ -1,6 +1,6 @@
 [package]
-name = "minions"
-version = "0.1.0"
+name = "aiutante"
+version = "0.0.1-alpha"
 edition = "2024"
 
 [dependencies]

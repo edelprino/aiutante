@@ -15,7 +15,6 @@ use crate::agent::{Agent, AgentConfiguration};
 
 #[derive(serde::Serialize)]
 struct ChatCompletionChunk {
-    id: String,
     object: String,
     created: u64,
     choices: Vec<Choice>,
@@ -39,7 +38,6 @@ struct Delta {
 impl ChatCompletionChunk {
     fn new(content: Option<String>, role: Option<String>, finish_reason: Option<String>) -> Self {
         Self {
-            id: "chatcmpl-123".to_string(),
             object: "chat.completion.chunk".to_string(),
             created: std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
