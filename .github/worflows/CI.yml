@@ -1,0 +1,14 @@
+name: CI
+on:
+  push:
+    branches:
+      - master
+jobs:
+  Test:
+    env:
+      RUST_LOG: info
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: make build
