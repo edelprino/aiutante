@@ -21,7 +21,7 @@ RUN (type -p wget >/dev/null || (apt update && apt install wget -y)) \
 	&& apt update \
 	&& apt install gh -y
 
-RUN apt-get -y install jq
+RUN apt-get -y install jq curl
 
 ENV AIUTANTE_FOLDER=/agents
 ENV AIUTANTE_API_HOST=0.0.0.0:3000
