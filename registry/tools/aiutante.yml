@@ -1,3 +1,20 @@
-list_of_available_tools:
-  description: Return the list of available tools in the registry
+get_all_downloadable_toolboxes_from_registry:
+  description: Return the list of available toolboxes (a toolbox contains multiple tools) from the registry
   tool: gh api repos/edelprino/aiutante/contents/registry/tools | jq -r '.[].name'
+
+download_toolbox:
+  description: |
+    Download a toolbox (a toolbox contains multiple tools) from the registry.
+    Check the list of available toolboxes after running this command to ensure the toolbox is installed correctly.
+  tool: curl -o $AIUTANTE_FOLDER/tools/{{name}}.yml -L https://raw.githubusercontent.com/edelprino/aiutante/main/registry/tools/{{name}}.yml
+  arguments:
+    name:
+      description: The name of the toolbox to download
+
+list_of_available_toolboxes:
+  description: Get the list of all available toolboxes (a toolbox contains multiple tools)
+  tool: ls -1 $AIUTANTE_FOLDER/tools | grep ".yml" | sed 's/\.yml$//'
+
+list_of_available_agents:
+  description: Get the list of all available agents
+  tool: ls -1 $AIUTANTE_FOLDER | grep ".md" | sed 's/\.md$//'
