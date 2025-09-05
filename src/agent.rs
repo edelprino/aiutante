@@ -50,6 +50,12 @@ impl std::fmt::Display for AgentConfiguration {
 }
 
 impl AgentConfiguration {
+    pub fn from_name(name: &str) -> Result<Self, AgentError> {
+        let root = std::env::var("AIUTANTE_FOLDER").unwrap_or_else(|_| ".aiutante".to_string());
+        let path = format!("{root}/{name}.md");
+        Self::from_file(path)
+    }
+
     pub fn from_file<P: AsRef<std::path::Path>>(path: P) -> Result<Self, AgentError> {
         let prompt = std::fs::read_to_string(&path)
             .map_err(|e| AgentError::new(&format!("Failed to read file: {e}")))?;
@@ -116,9 +122,8 @@ impl Agent {
 
         let mut builder = builder.preamble(&configuration.prompt);
         for library in &configuration.metadata.tools {
-            let minions_folder =
-                std::env::var("AIUTANTE_FOLDER").expect("AIUTANTE_FOLDER must be set in .env");
-            let path = format!("{minions_folder}/tools/{library}.yml");
+            let root = std::env::var("AIUTANTE_FOLDER").unwrap_or_else(|_| ".aiutante".to_string());
+            let path = format!("{root}/tools/{library}.yml");
             let lib_tools = tools::YamlTool::from_file(path, &configuration.name)
                 .map_err(|e| AgentError::new(&format!("Failed to load tool library: {e}")))?;
             for tool in lib_tools {

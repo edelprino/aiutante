@@ -75,10 +75,7 @@ async fn chat_completions(
         .map(|m| m.clone().try_into().unwrap())
         .collect();
 
-    let minions_folder =
-        std::env::var("AIUTANTE_FOLDER").expect("AIUTANTE_FOLDER must be set in .env");
-    let path = format!("{minions_folder}/{agent}.md");
-    let c = AgentConfiguration::from_file(&path).expect("Failed to read agent configuration");
+    let c = AgentConfiguration::from_name(&agent).expect("Failed to read agent configuration");
     let agent = Agent::from_configuration(&c).expect("Failed to create agent from configuration");
     let response = agent
         .completions(messages)

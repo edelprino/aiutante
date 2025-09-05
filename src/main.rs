@@ -17,9 +17,6 @@ enum Cli {
     Chat {
         agent: String,
     },
-    Create {
-        agent: String,
-    },
     Telegram {
         agent: String,
     },
@@ -32,17 +29,12 @@ async fn main() {
     dotenvy::dotenv()
         .map_err(|e| log::warn!("Failed to read .env file: {e}"))
         .ok();
-    let minions_folder =
-        std::env::var("AIUTANTE_FOLDER").expect("AIUTANTE_FOLDER must be set in .env");
 
     let cli = Cli::parse();
     match cli {
         Cli::Run { agent, task } => {
-            let path = format!("{minions_folder}/{agent}.md");
-            let c =
-                AgentConfiguration::from_file(&path).expect("Failed to read agent configuration");
-            let agent =
-                Agent::from_configuration(&c).expect("Failed to create agent from configuration");
+            let c = AgentConfiguration::from_name(&agent).expect("Failed");
+            let agent = Agent::from_configuration(&c).expect("Failed");
             let response = agent.run(&task.unwrap_or_default()).await;
 
             match response {
@@ -51,27 +43,13 @@ async fn main() {
             }
         }
         Cli::Chat { agent } => {
-            let path = format!("{minions_folder}/{agent}.md");
-            let c =
-                AgentConfiguration::from_file(&path).expect("Failed to read agent configuration");
-            let agent =
-                Agent::from_configuration(&c).expect("Failed to create agent from configuration");
+            let c = AgentConfiguration::from_name(&agent).expect("Failed");
+            let agent = Agent::from_configuration(&c).expect("Failed");
             agent.chat().await.expect("Failed to run chat");
         }
-        Cli::Create { agent } => {
-            let path = format!("{minions_folder}/{agent}.md");
-            if std::path::Path::new(&path).exists() {
-                eprintln!("Agent {agent} already exists at {path}");
-                return;
-            }
-            let config = AgentConfiguration::default();
-            std::fs::write(&path, config.to_string()).expect("Failed to write agent template");
-            println!("Created new agent {agent} at {path}");
-        }
         Cli::Telegram { agent } => {
-            let path = format!("{minions_folder}/{agent}.md");
             let c =
-                AgentConfiguration::from_file(&path).expect("Failed to read agent configuration");
+                AgentConfiguration::from_name(&agent).expect("Failed to read agent configuration");
             let agent =
                 Agent::from_configuration(&c).expect("Failed to create agent from configuration");
             agent.telegram().await.expect("Failed to run telegram bot");
