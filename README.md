@@ -1,12 +1,15 @@
 # AIUTANTE
-A.I.U.T.A.N.T.E. means _Artificial Intelligence Using Text And Note To Execute_. It is a project to build and run simple AI agents to automate tasks and enhance productivity based on markdown files.
+A.I.U.T.A.N.T.E. stands for _Artificial Intelligence Using Text And Notes To Execute_.  
+It is a project designed to build and run simple AI agents that automate tasks and enhance productivity, all based on Markdown files.
 
-- Every agent is a Markdown (`.md`) file that contains a set of instructions and goals.
-- Every agent can use tools that are simple YAML (`.yml`) files that run scripts or commands.
+- Each agent is a Markdown (`.md`) file containing a set of instructions and goals.
+- Each agent can use tools defined in simple YAML (`.yml`) files, which run scripts or commands.
 
 You can use your own agents by:
 
-- Chat in CLI with an agent: `aiutante chat <agent-name>`
-- Ask an agent to execute a task: `aiutante run <agent-name> <task>`
-- Run an agent as Telegram bot: `aiutante telegram <agent-name>` (need to set up a bot token in `TELOXIDE_BOT_TOKEN` env variable)
-- Access to the agents through OpenAI compatible server for using them in all app that supporto OpenAI api: `aiutante api` (use `model` to set the name of the agent you want to use)
+- Chatting in the CLI with an agent: `aiutante chat <agent-name>`
+- Asking an agent to execute a task: `aiutante run <agent-name> <task>`
+- Running an agent as a Telegram bot: `aiutante telegram <agent-name>`  
+  (requires setting up a bot token in the `TELOXIDE_BOT_TOKEN` environment variable)
+- Accessing agents through an OpenAI-compatible server, so you can use them in any app that supports the OpenAI API:  
+  `aiutante api` (use the `model` parameter to specify the name of the agent you want to use)
