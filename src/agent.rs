@@ -112,15 +112,13 @@ impl Agent {
         let client = match configuration.metadata.provider {
             Some(Provider::OpenAI) | None => openai::Client::from_env(),
         };
-        let builder = client
-            .agent(
-                configuration
-                    .metadata
-                    .model
-                    .as_deref()
-                    .unwrap_or(openai::GPT_4O_MINI),
-            )
-            .temperature(0.0);
+        let builder = client.agent(
+            configuration
+                .metadata
+                .model
+                .as_deref()
+                .unwrap_or(openai::GPT_4O_MINI),
+        );
 
         let mut builder = builder.preamble(&configuration.prompt);
         for library in &configuration.metadata.tools {

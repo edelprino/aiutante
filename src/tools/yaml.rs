@@ -148,7 +148,7 @@ impl ToolsConfig {
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
         let content = fs::read_to_string(path)?;
         let config: ToolsConfig = serde_yaml::from_str(&content)
-            .map_err(|e| ToolError::new(&format!("Failed to parse TOML: {e}")))?;
+            .map_err(|e| ToolError::new(&format!("Failed to parse YAML: {e}")))?;
         log::debug!("Loaded {} tools from configuration", config.0.len());
         Ok(config)
     }
