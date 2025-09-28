@@ -1,8 +1,0 @@
-delegate:
-  description: Delegate a specific task to another agent
-  tool: aiutante run {{name}} "{{task}}"
-  arguments:
-    name:
-        description: "The name of the agent to run"
-    task:
-        description: "The task to run"

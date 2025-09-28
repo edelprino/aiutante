@@ -92,18 +92,25 @@ impl rig::tool::Tool for YamlTool {
             let placeholder = format!("{{{{{key}}}}}");
             command = command.replace(&placeholder, value);
         }
+
         log::debug!("[{}] Request: {:?}", self.name(), command);
-        let output = std::process::Command::new("bash")
+
+        let sandbox = std::env::var("AIUTANTE_SANDBOX").unwrap_or("bash".to_string());
+        let executable = sandbox.split_whitespace().next().unwrap_or("bash");
+        let args = sandbox.split_whitespace().skip(1).collect::<Vec<&str>>();
+
+        let output = std::process::Command::new(executable)
+            .args(&args)
             .arg("-lc")
             .arg(command)
             .envs(std::env::vars())
             .env("AGENT", &self.agent)
-            .output();
+            .output()
+            .inspect_err(|e| log::error!("[{}] Failed to execute command: {}", self.name(), e));
 
         let output = match output {
             Ok(output) => output,
             Err(e) => {
-                log::error!("[{}] Error: {}", self.name(), e);
                 return Ok(format!("Error: {e}"));
             }
         };
